@@ -1,0 +1,25 @@
+{
+  "name": "@uriva/scraper-service",
+  "version": "0.1.0",
+  "exports": "./mod.ts",
+  "nodeModulesDir": "auto",
+  "tasks": {
+    "server": "deno run -A src/server.ts",
+    "test": "deno test -A",
+    "check": "deno fmt --check && deno lint && deno check src/*.ts"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window", "dom"]
+  },
+  "imports": {
+    "@uri/simplify-html": "jsr:@uri/simplify-html@0.0.3",
+    "gamla": "jsr:@uri/gamla@0.0.10",
+    "puppeteer": "npm:puppeteer@24.34.0",
+    "puppeteer-extra": "npm:puppeteer-extra@3.3.6",
+    "puppeteer-extra-plugin-stealth": "npm:puppeteer-extra-plugin-stealth@2.11.2",
+    "puppeteer-afp": "npm:puppeteer-afp@1.1.6",
+    "typed-api": "jsr:@uri/typed-api@0.0.16",
+    "zod": "npm:zod@3.25.57",
+    "zod/v4": "npm:zod@3.25.57/v4"
+  }
+}

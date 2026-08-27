@@ -1,0 +1,25 @@
+steps:
+  - name: "gcr.io/kaniko-project/executor:latest"
+    args:
+      - --destination=gcr.io/$PROJECT_ID/scraper-service
+      - --cache=true
+      - --dockerfile=Dockerfile
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      [
+        "run",
+        "deploy",
+        "scraper-service",
+        "--image",
+        "gcr.io/$PROJECT_ID/scraper-service",
+        "--region",
+        "us-central1",
+        "--allow-unauthenticated",
+        "--memory",
+        "2Gi",
+        "--cpu",
+        "2",
+        "--timeout",
+        "1800",
+      ]
