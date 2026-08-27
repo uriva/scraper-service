@@ -38,17 +38,26 @@ const browserSuite = await makeBrowserSuite();
 const implementation = {
   authenticate: (token: string): Promise<ClientUser> => {
     const client = resolveClient(token);
-    if (!client) return Promise.reject(new Error("Unauthorized: invalid token"));
+    if (!client) {
+      return Promise.reject(new Error("Unauthorized: invalid token"));
+    }
     return Promise.resolve(client);
   },
   handlers: {
-    scrape: async (client: ClientUser, payload: Parameters<typeof browserSuite.scrape>[0]) => {
+    scrape: async (
+      client: ClientUser,
+      payload: Parameters<typeof browserSuite.scrape>[0],
+    ) => {
       console.log(`[${client.name}] scrape: ${payload.url}`);
       return await browserSuite.scrape(payload);
     },
     images: async (
       client: ClientUser,
-      payload: { url: string; proxy?: "auto" | "always" | "never"; country?: string },
+      payload: {
+        url: string;
+        proxy?: "auto" | "always" | "never";
+        country?: string;
+      },
     ) => {
       console.log(`[${client.name}] images: ${payload.url}`);
       const images = await browserSuite.images(
@@ -58,7 +67,10 @@ const implementation = {
       );
       return { images };
     },
-    crawl: async (client: ClientUser, payload: Parameters<typeof browserSuite.crawl>[0]) => {
+    crawl: async (
+      client: ClientUser,
+      payload: Parameters<typeof browserSuite.crawl>[0],
+    ) => {
       console.log(
         `[${client.name}] crawl: ${payload.url} (maxDepth=${payload.maxDepth}, maxPages=${payload.maxPages})`,
       );
@@ -121,10 +133,13 @@ const fatalBrowserErrors = ["ConnectionClosedError", "ProtocolError"];
 
 const handler = async (request: Request): Promise<Response> => {
   if (request.method === "GET") {
-    return new Response(JSON.stringify({ status: "healthy", service: "scraper-service" }), {
-      status: 200,
-      headers: { "content-type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ status: "healthy", service: "scraper-service" }),
+      {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      },
+    );
   }
 
   try {
@@ -137,7 +152,10 @@ const handler = async (request: Request): Promise<Response> => {
   } catch (e) {
     console.error(e);
     if (e instanceof Error && fatalBrowserErrors.includes(e.name)) {
-      console.error("Fatal browser error, triggering container restart:", e.name);
+      console.error(
+        "Fatal browser error, triggering container restart:",
+        e.name,
+      );
       Deno.exit(1);
     }
     const message = e instanceof Error ? e.message : String(e);

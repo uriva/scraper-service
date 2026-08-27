@@ -1,6 +1,6 @@
 import { simplifiedHtmlToString, simplifyHtml } from "@uri/simplify-html";
 import { coerce, map, pipe, sortKey, throttle } from "gamla";
-import { Browser, Page } from "puppeteer";
+import type { Browser, Page } from "puppeteer";
 import { protectPage } from "puppeteer-afp";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
@@ -116,10 +116,10 @@ const scrollPage = (page: Page, maxScrolls: number) =>
         let count = 0;
         const timer = setInterval(() => {
           const scrollHeight = document.body.scrollHeight;
-          window.scrollBy(0, distance);
+          globalThis.scrollBy(0, distance);
           count++;
           if (
-            window.scrollY + window.innerHeight >= scrollHeight ||
+            globalThis.scrollY + globalThis.innerHeight >= scrollHeight ||
             count >= scrolls
           ) {
             clearInterval(timer);
@@ -239,9 +239,7 @@ export const makeBrowserSuite = async () => {
     const text = htmlToText(html);
     const title = await page.title().catch(() => "");
     const links = input.extractLinks ? await extractLinksFromPage(page) : [];
-    const images = input.extractImages
-      ? await extractImagesFromPage(page)
-      : [];
+    const images = input.extractImages ? await extractImagesFromPage(page) : [];
 
     return { title, content: text, links, images };
   };
@@ -252,8 +250,10 @@ export const makeBrowserSuite = async () => {
 
     if (proxyMode === "always") {
       try {
-        const result = await throttledProxy(country, (page) =>
-          scrapePageWithBrowser(page, input));
+        const result = await throttledProxy(
+          country,
+          (page) => scrapePageWithBrowser(page, input),
+        );
         return {
           status: result.content ? "success" : "no-valid-text",
           title: result.title,
@@ -273,8 +273,10 @@ export const makeBrowserSuite = async () => {
     }
 
     try {
-      const result = await throttledDirect(country, (page) =>
-        scrapePageWithBrowser(page, input));
+      const result = await throttledDirect(
+        country,
+        (page) => scrapePageWithBrowser(page, input),
+      );
       if (result.content && result.content.trim().length > 0) {
         return {
           status: "success",
@@ -301,8 +303,10 @@ export const makeBrowserSuite = async () => {
 
     // Fallback to proxy
     try {
-      const result = await throttledProxy(country, (page) =>
-        scrapePageWithBrowser(page, input));
+      const result = await throttledProxy(
+        country,
+        (page) => scrapePageWithBrowser(page, input),
+      );
       return {
         status: result.content ? "success" : "no-valid-text",
         title: result.title,
@@ -390,7 +394,9 @@ export const makeBrowserSuite = async () => {
 
       if (item.depth < maxDepth && scrapeRes.links) {
         for (const link of scrapeRes.links) {
-          if (!seen.has(link) && (!sameDomainOnly || isSameDomain(startUrl, link))) {
+          if (
+            !seen.has(link) && (!sameDomainOnly || isSameDomain(startUrl, link))
+          ) {
             seen.add(link);
             queue.push({ url: link, depth: item.depth + 1 });
           }

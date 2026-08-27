@@ -3,9 +3,9 @@ import {
   type CrawlInput,
   type CrawlPage,
   type ImagesInput,
-  scraperApi,
   type ScrapeInput,
   type ScrapeOutput,
+  scraperApi,
 } from "./api.ts";
 
 export const makeScraperClient = (

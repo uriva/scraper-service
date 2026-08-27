@@ -11,6 +11,11 @@
   "compilerOptions": {
     "lib": ["deno.window", "dom"]
   },
+  "lint": {
+    "rules": {
+      "exclude": ["no-slow-types"]
+    }
+  },
   "imports": {
     "@uri/simplify-html": "jsr:@uri/simplify-html@0.0.3",
     "gamla": "jsr:@uri/gamla@0.0.10",

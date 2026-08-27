@@ -1,5 +1,5 @@
-export const dataImpulseDomain =
-  Deno.env.get("DATAIMPULSE_DOMAIN") || "gw.dataimpulse.com:823";
+export const dataImpulseDomain = Deno.env.get("DATAIMPULSE_DOMAIN") ||
+  "gw.dataimpulse.com:823";
 
 const baseLogin = () =>
   Deno.env.get("DATAIMPULSE_LOGIN") ||
