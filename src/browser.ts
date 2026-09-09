@@ -21,9 +21,13 @@ const commonFlags = [
   "--disable-gpu",
   "--disable-extensions",
   "--js-flags=--max-old-space-size=512",
+  "--autoplay-policy=user-gesture-required",
+  "--disable-background-networking",
+  "--mute-audio",
+  "--disable-features=AudioServiceOutOfProcess,IsolateOrigins,site-per-process",
 ];
 
-const navigationTimeout = 45_000;
+const navigationTimeout = 25_000;
 const maxHtmlBeforeParse = 300_000;
 const maxTextChars = 150_000;
 
@@ -204,10 +208,29 @@ export const makeBrowserSuite = async () => {
     links: string[];
     images: string[];
   }> => {
+    await page.setRequestInterception(true);
+    page.on("request", (req) => {
+      const resourceType = req.resourceType();
+      if (
+        resourceType === "media" ||
+        resourceType === "font" ||
+        (resourceType === "image" && !input.extractImages)
+      ) {
+        req.abort().catch(() => {});
+      } else {
+        req.continue().catch(() => {});
+      }
+    });
+
     await page.goto(input.url, {
-      waitUntil: "networkidle2",
+      waitUntil: "domcontentloaded",
       timeout: navigationTimeout,
     });
+
+    await Promise.race([
+      page.waitForNetworkIdle({ idleTime: 500, timeout: 3000 }).catch(() => {}),
+      new Promise((resolve) => setTimeout(resolve, 2000)),
+    ]);
 
     if (input.closePopups !== false) {
       await closePopupsOnPage(page);
@@ -330,11 +353,28 @@ export const makeBrowserSuite = async () => {
     proxy = "auto",
     country = "il",
   ): Promise<string[]> => {
-    const fn = (page: Page) =>
-      page.goto(url, {
-        waitUntil: "networkidle2",
+    const fn = async (page: Page) => {
+      await page.setRequestInterception(true);
+      page.on("request", (req) => {
+        const resourceType = req.resourceType();
+        if (resourceType === "media" || resourceType === "font") {
+          req.abort().catch(() => {});
+        } else {
+          req.continue().catch(() => {});
+        }
+      });
+      await page.goto(url, {
+        waitUntil: "domcontentloaded",
         timeout: navigationTimeout,
-      }).then(() => extractImagesFromPage(page));
+      });
+      await Promise.race([
+        page.waitForNetworkIdle({ idleTime: 500, timeout: 3000 }).catch(
+          () => {},
+        ),
+        new Promise((resolve) => setTimeout(resolve, 2000)),
+      ]);
+      return await extractImagesFromPage(page);
+    };
 
     if (proxy === "always") {
       return throttledProxy(country, fn).catch(() => []);

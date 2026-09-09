@@ -17,7 +17,7 @@ steps:
         "us-central1",
         "--allow-unauthenticated",
         "--memory",
-        "2Gi",
+        "4Gi",
         "--cpu",
         "2",
         "--timeout",
