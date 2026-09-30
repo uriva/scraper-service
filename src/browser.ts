@@ -28,7 +28,7 @@ const commonFlags = [
 ];
 
 const navigationTimeout = 25_000;
-const maxHtmlBeforeParse = 300_000;
+const maxHtmlBeforeParse = 5_000_000;
 const maxTextChars = 150_000;
 
 const truncateText = (text: string) =>
@@ -259,7 +259,11 @@ export const makeBrowserSuite = async () => {
     }
 
     const html = await page.content();
-    const text = htmlToText(html);
+    const parsedText = htmlToText(html);
+    const text = parsedText && parsedText.trim().length > 0
+      ? parsedText
+      : await page.evaluate(() => (document.body as HTMLElement)?.innerText || "")
+        .catch(() => "");
     const title = await page.title().catch(() => "");
     const links = input.extractLinks ? await extractLinksFromPage(page) : [];
     const images = input.extractImages ? await extractImagesFromPage(page) : [];
